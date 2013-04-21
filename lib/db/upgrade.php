@@ -1687,5 +1687,27 @@ function xmldb_main_upgrade($oldversion) {
         upgrade_main_savepoint(true, 2012120303.02);
     }
 
+    if ($oldversion < 2012120303.23) {
+               // Define field eventtype to be added to event_subscriptions.
+        $table = new xmldb_table('course_modules');
+        $field = new xmldb_field('accessible', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1', 'showdescription');
+        $index = new xmldb_index('accessible', XMLDB_INDEX_NOTUNIQUE, array('accessible'));
+
+        // Conditionally launch add field eventtype.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Conditionally launch add index accessible
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Clear course cache (will be rebuilt on first visit) in case of changes to these.
+        rebuild_course_cache(0, true);
+
+        upgrade_main_savepoint(true, 2012120303.23);
+    }
+
     return true;
 }
